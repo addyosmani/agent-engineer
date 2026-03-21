@@ -41,16 +41,16 @@ This course is split into three parts:
 | 12 | [Getting started with Vertex AI and ADK](./12-getting-started-with-vertex-and-adk/README.md) | The Google Cloud AI stack for agents - what is available and how it fits together |
 | 13 | [Building your first agent](./13-building-your-first-agent/README.md) | Hands-on - build a working agent with ADK step by step |
 | 14 | [Agent protocols - MCP and A2A](./14-agent-protocols-mcp-and-a2a/README.md) | How agents talk to tools and to each other using open standards |
-| 15 | [Where to go from here](./15-where-to-go-from-here/README.md) | Resources, codelabs, community, and next steps |
 
 ### Part 3: deep dives
 
 | # | Lesson | What you will learn |
 |---|--------|-------------------|
-| 16 | [AGENTS.md](./16-agents-md/README.md) | Giving AI coding agents context about your project with a standard config file |
-| 17 | [MCP deep dive](./17-mcp-deep-dive/README.md) | How MCP works under the hood, MCP vs. CLI tools, and security considerations |
-| 18 | [Agent skills](./18-agent-skills/README.md) | Packaging reusable domain expertise as portable skill modules |
-| 19 | [Orchestrators](./19-orchestrators/README.md) | Managing agent control flow - patterns, frameworks, and best practices |
+| 15 | [AGENTS.md](./15-agents-md/README.md) | Giving AI coding agents context about your project with a standard config file |
+| 16 | [MCP deep dive](./16-mcp-deep-dive/README.md) | How MCP works under the hood, MCP vs. CLI tools, and security considerations |
+| 17 | [Agent skills](./17-agent-skills/README.md) | Packaging reusable domain expertise as portable skill modules |
+| 18 | [Orchestrators](./18-orchestrators/README.md) | Managing agent control flow - patterns, frameworks, and best practices |
+| 19 | [Where to go from here](./19-where-to-go-from-here/README.md) | Resources, codelabs, community, and next steps |
 
 ## How to use this course
 
