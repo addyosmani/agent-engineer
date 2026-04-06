@@ -195,7 +195,7 @@ Each framework makes different trade-offs. ADK emphasizes Google Cloud integrati
 ### Protocol implementations
 
 - **MCP Specification:** [modelcontextprotocol.io](https://modelcontextprotocol.io) - The protocol spec and reference implementations
-- **A2A Protocol:** [developers.google.com/a2a](https://developers.google.com/a2a) - Specification and documentation
+- **A2A Protocol:** [a2a-protocol.org](https://a2a-protocol.org/latest/) - Specification and documentation
 
 ---
 
@@ -346,7 +346,7 @@ Keep these links handy. They are the primary references you will come back to:
 
 **Protocols:**
 - MCP Specification: [https://modelcontextprotocol.io](https://modelcontextprotocol.io)
-- A2A Protocol: [https://developers.google.com/a2a](https://developers.google.com/a2a)
+- A2A Protocol: [https://a2a-protocol.org/latest/](https://a2a-protocol.org/latest/)
 - MCP Tools in ADK: [https://google.github.io/adk-docs/tools/mcp-tools/](https://google.github.io/adk-docs/tools/mcp-tools/)
 
 **Open Source:**

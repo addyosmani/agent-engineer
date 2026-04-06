@@ -300,7 +300,7 @@ This is one of the most important distinctions to understand:
 - You would use **MCP** to connect to a flight search API (a tool that takes departure city, arrival city, and date, and returns flights)
 - You would use **A2A** to delegate to a hotel booking agent that can understand preferences like "somewhere quiet near the conference venue" and figure out the best options on its own
 
-> **Learn more:** [A2A in ADK](https://google.github.io/adk-docs/a2a/) and [A2A Protocol Spec](https://developers.google.com/a2a)
+> **Learn more:** [A2A in ADK](https://google.github.io/adk-docs/a2a/) and [A2A Protocol Spec](https://a2a-protocol.org/latest/)
 
 ---
 
@@ -487,7 +487,7 @@ Both protocols are actively evolving. Expect to see:
 
 - **MCP Tools in ADK:** [https://google.github.io/adk-docs/tools/mcp-tools/](https://google.github.io/adk-docs/tools/mcp-tools/)
 - **A2A in ADK:** [https://google.github.io/adk-docs/a2a/](https://google.github.io/adk-docs/a2a/)
-- **A2A Protocol Specification:** [https://developers.google.com/a2a](https://developers.google.com/a2a)
+- **A2A Protocol Specification:** [https://a2a-protocol.org/latest/](https://a2a-protocol.org/latest/)
 - **MCP Specification:** [https://modelcontextprotocol.io](https://modelcontextprotocol.io)
 
 ---
