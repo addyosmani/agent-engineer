@@ -136,7 +136,7 @@ pipeline = SequentialAgent(
 )
 ```
 
-See the [ADK SequentialAgent documentation](https://google.github.io/adk-docs/agents/workflow-agents/sequential-agent/) for implementation details.
+See the [ADK SequentialAgent documentation](https://adk.dev/agents/workflow-agents/sequential-agents/) for implementation details.
 
 ### Parallel (fan-out / gather)
 
@@ -169,7 +169,7 @@ review = ParallelAgent(
 )
 ```
 
-See the [ADK ParallelAgent documentation](https://google.github.io/adk-docs/agents/workflow-agents/parallel-agent/) for implementation details.
+See the [ADK ParallelAgent documentation](https://adk.dev/agents/workflow-agents/parallel-agents/) for implementation details.
 
 ### Loop (iterative refinement)
 
@@ -209,7 +209,7 @@ refiner = LoopAgent(
 )
 ```
 
-See the [ADK LoopAgent documentation](https://google.github.io/adk-docs/agents/workflow-agents/loop-agent/) for implementation details.
+See the [ADK LoopAgent documentation](https://adk.dev/agents/workflow-agents/loop-agents/) for implementation details.
 
 ### Routing (handoff / dispatch)
 
