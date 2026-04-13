@@ -416,7 +416,9 @@ Do not jump to a hierarchical multi-agent system because it sounds impressive. A
 
 ### Match the model to the task
 
-Not every agent in your orchestration needs the same model. A classification router can use a fast, cheap model (Gemini Flash-Lite). A complex reasoning agent should use a capable model (Gemini Pro). This saves significant cost.
+Not every agent in your orchestration needs the same model. A classification router can use a fast, cheap model (Gemini 2.0 Flash). A complex reasoning agent should use a capable model (Gemini 2.0 Pro). This saves significant cost.
+
+> **Model Availability:** Gemini 2.0 models are currently GA (General Availability). Newer preview models may be available for experimentation but should be used with caution in production.
 
 ### Set iteration limits
 

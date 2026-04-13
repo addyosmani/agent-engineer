@@ -75,9 +75,11 @@ Gemini is Google's family of multimodal AI models. For agent development, you wi
 
 | Model | Best For | Characteristics |
 |-------|----------|----------------|
-| **Gemini Pro** | Complex reasoning, multi-step planning, nuanced decisions | Highest capability, higher latency, higher cost |
-| **Gemini Flash** | Balanced tasks - tool use, summarization, conversation | Good capability, fast, moderate cost |
-| **Gemini Flash-Lite** | High-volume, simpler tasks - classification, routing, extraction | Fast, lowest cost, good for high-throughput use cases |
+| **Gemini 2.0 Pro** | Complex reasoning, multi-step planning, nuanced decisions | Highest capability, higher latency, higher cost |
+| **Gemini 2.0 Flash** | Balanced tasks - tool use, summarization, conversation | Good capability, fast, moderate cost |
+| **Gemini 2.0 Flash-Lite** | High-volume, simpler tasks - classification, routing, extraction | Fast, lowest cost, good for high-throughput use cases |
+
+> **Model Availability:** Gemini 2.0 models are currently GA (General Availability). Newer preview models may be available for experimentation but are recommended for development/testing rather than production use.
 
 ### Choosing the right model
 
@@ -514,7 +516,7 @@ Here is a reference connecting the concepts from earlier lessons to specific Goo
 | 3 - Tools | Function calling | ADK Function Tools, MCP Tools, OpenAPI Tools |
 | 4 - Design Patterns | Orchestration | ADK Sequential/Parallel/Loop Agents |
 | 5 - Memory | Session state, long-term memory | ADK session management, Agent Engine |
-| 6 - Planning | Multi-step reasoning | Gemini Pro for complex planning |
+| 6 - Planning | Multi-step reasoning | Gemini 2.0 Pro for complex planning |
 | 7 - Multi-Agent | Agent coordination | ADK multi-agent support |
 | 8 - RAG | Knowledge retrieval | Vertex AI Search, RAG Engine |
 | 9 - Evaluation | Testing agents | Vertex AI Evaluation |
