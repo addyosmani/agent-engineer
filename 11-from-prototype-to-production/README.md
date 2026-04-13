@@ -439,11 +439,11 @@ Use the cheapest model that can handle each task. Not every step requires your m
 User Query
     |
     v
-[Router] --Simple query--> Gemini Flash-Lite ($)
+[Router] --Simple query--> Gemini 2.0 Flash-Lite ($)
     |
-    +-----Medium complexity--> Gemini Flash ($$)
+    +-----Medium complexity--> Gemini 2.0 Flash ($$)
     |
-    +-----Complex reasoning--> Gemini Pro ($$$)
+    +-----Complex reasoning--> Gemini 2.0 Pro ($$$)
 ```
 
 | Task Type | Recommended Model Tier | Rationale |

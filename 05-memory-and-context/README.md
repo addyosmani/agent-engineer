@@ -250,7 +250,7 @@ State is useful because it gives the agent quick access to important facts witho
 Google Cloud provides session management through the Agent Development Kit (ADK) and Vertex AI:
 
 - **ADK Sessions:** The [ADK session system](https://google.github.io/adk-docs/sessions/) provides built-in session management with event tracking and state.
-- **Vertex AI Sessions:** [Vertex AI Agent Engine sessions](https://cloud.google.com/agent-builder/agent-engine/sessions/overview) offer managed session storage with automatic scaling.
+- **Vertex AI Sessions:** [Vertex AI Agent Engine sessions](https://docs.cloud.google.com/agent-builder/agent-engine/sessions/overview) offer managed session storage with automatic scaling.
 
 These handle the infrastructure of storing and retrieving sessions, so you can focus on the agent logic.
 
@@ -589,7 +589,7 @@ The context engineering layer assembles the right context *before* the LLM sees 
 ## Further reading
 
 - [ADK Sessions documentation](https://google.github.io/adk-docs/sessions/)
-- [Vertex AI Agent Engine - Manage Sessions](https://cloud.google.com/agent-builder/agent-engine/sessions/overview)
+- [Vertex AI Agent Engine - Manage Sessions](https://docs.cloud.google.com/agent-builder/agent-engine/sessions/overview)
 - [Vertex AI Vector Search](https://cloud.google.com/vertex-ai/docs/vector-search/overview)
 - [Google Cloud AI codelabs](https://codelabs.developers.google.com/?cat=AI)
 
