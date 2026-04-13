@@ -78,12 +78,14 @@ from google.adk.agents import Agent
 
 my_agent = Agent(
     name="my_first_agent",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="You are a helpful assistant that answers questions clearly and concisely.",
 )
 ```
 
-The `model` parameter determines which Gemini model handles the reasoning. For learning and prototyping, `gemini-2.5-flash` is a great choice - it is fast and cost-effective. For more complex reasoning tasks, you might upgrade to `gemini-2.5-pro`.
+The `model` parameter determines which Gemini model handles the reasoning. For learning and prototyping, `gemini-2.0-flash` is a great choice - it is fast and cost-effective. For more complex reasoning tasks, you might upgrade to `gemini-2.0-pro`.
+
+> **Note:** Gemini 2.0 models are currently in General Availability (GA). Newer preview models may be available but are recommended for experimentation rather than production use.
 
 The `instruction` parameter is your agent's system prompt. This is where you define its personality, capabilities, and boundaries. We will cover how to write good instructions later in this lesson.
 
@@ -123,7 +125,7 @@ You then attach the tool to your agent:
 ```python
 my_agent = Agent(
     name="my_first_agent",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="You are a helpful assistant. Use the get_weather tool when asked about weather.",
     tools=[get_weather],
 )
@@ -138,7 +140,7 @@ from google.adk.tools import google_search
 
 my_agent = Agent(
     name="my_first_agent",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="You are a helpful assistant. Use search for current events and get_weather for weather.",
     tools=[get_weather, google_search],
 )
@@ -205,7 +207,7 @@ from google.adk.agents import Agent
 
 researcher = Agent(
     name="researcher",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="You research topics thoroughly using search.",
     tools=[google_search],
 )
@@ -329,7 +331,7 @@ def calculate_discount(price: float, discount_percent: float) -> float:
 
 shopping_agent = Agent(
     name="shopping_assistant",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="""You are a shopping assistant. You can:
     - Search the web for product reviews and comparisons
     - Look up specific products in our catalog by ID
@@ -370,20 +372,20 @@ from google.adk.agents import Agent
 # Specialist agents
 researcher = Agent(
     name="researcher",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="You research topics using web search. Return factual findings.",
     tools=[google_search],
 )
 
 writer = Agent(
     name="writer",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="You write clear, engaging content based on research findings.",
 )
 
 fact_checker = Agent(
     name="fact_checker",
-    model="gemini-2.5-flash",
+    model="gemini-2.0-flash",
     instruction="You verify claims by searching for supporting evidence.",
     tools=[google_search],
 )
@@ -391,7 +393,7 @@ fact_checker = Agent(
 # Root agent that orchestrates
 coordinator = Agent(
     name="content_team",
-    model="gemini-2.5-pro",
+    model="gemini-2.0-pro",
     instruction="""You coordinate a content creation team. For any content request:
     1. Ask the researcher to gather information
     2. Ask the writer to create content based on the research

@@ -211,7 +211,7 @@ def safe_database_query(query: str, user_context: dict) -> str:
 
 ### Using Model Armor on Vertex AI
 
-Google Cloud provides [Model Armor](https://cloud.google.com/security-command-center/docs/model-armor-overview) as a managed service for applying guardrails to generative AI applications. Model Armor can:
+Google Cloud provides [Model Armor](https://docs.cloud.google.com/security-command-center/docs/model-armor-overview) as a managed service for applying guardrails to generative AI applications. Model Armor can:
 
 - Screen prompts and responses for harmful content
 - Detect prompt injection attempts
@@ -583,7 +583,7 @@ Notice how each layer has a distinct role. The input guardrails catch technical 
 
 - [Google Cloud Responsible AI](https://cloud.google.com/vertex-ai/generative-ai/docs/learn/responsible-ai) - Guidance on building fair, safe, and transparent AI applications on Vertex AI
 - [Google Secure AI Framework (SAIF)](https://cloud.google.com/security/ai-framework) - A comprehensive framework for securing AI systems
-- [Model Armor Overview](https://cloud.google.com/security-command-center/docs/model-armor-overview) - Managed guardrails for generative AI on Google Cloud
+- [Model Armor Overview](https://docs.cloud.google.com/security-command-center/docs/model-armor-overview) - Managed guardrails for generative AI on Google Cloud
 - [OWASP Top 10 for LLM Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/) - Industry-standard list of LLM security risks
 
 ---
