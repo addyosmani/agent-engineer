@@ -233,9 +233,11 @@ Not all tasks need the most powerful model. Choosing the right model is an engin
 ```
 Lighter / Faster / Cheaper                  Heavier / Smarter / More Expensive
 |----------------------------------------------------------|
-Gemini Flash          Gemini Pro          Gemini 2.5 Pro
-(simple tasks)        (balanced)          (complex reasoning)
+Gemini 2.0 Flash-Lite  Gemini 2.0 Flash    Gemini 2.0 Pro
+(simple tasks)         (balanced)          (complex reasoning)
 ```
+
+> **Note:** This reflects the current GA (General Availability) Gemini 2.0 models. Newer preview models may be available for experimentation.
 
 ### When to use what
 
@@ -245,7 +247,7 @@ Gemini Flash          Gemini Pro          Gemini 2.5 Pro
 | Data extraction ("Pull the date from this email") | Light (Flash) | Pattern matching, well-defined output |
 | Summarization | Light to Medium | Depends on length and complexity of source |
 | Multi-step reasoning | Medium to Heavy (Pro) | Requires sustained logical chains |
-| Complex code generation | Heavy (2.5 Pro) | Needs deep understanding of patterns and edge cases |
+| Complex code generation | Heavy (2.0 Pro) | Needs deep understanding of patterns and edge cases |
 | Agentic tool use | Medium to Heavy | Tool selection and result interpretation need strong reasoning |
 | Creative writing | Medium | Good results without the heaviest models |
 
