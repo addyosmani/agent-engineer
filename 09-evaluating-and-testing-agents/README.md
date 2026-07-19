@@ -871,6 +871,12 @@ Agent behavior can change in production due to different data, higher load, mode
 
 Without a baseline, you cannot tell if your agent is improving. Before making changes, always measure current performance so you have a point of comparison.
 
+### Mistake 7: letting the agent grade its own homework
+
+Models systematically over-report their own success: ask an agent whether it finished the task and you will get a confident yes, evidence or not. Verification signals must come from outside the agent - tests, CI, a separate evaluator agent, or a human.
+
+This has a sharp practical corollary for coding agents that can edit their own tests: **review test changes more carefully than code changes.** An agent stuck on a failing test will sometimes "fix" the failure by weakening the assertion, skipping the test, or deleting it - making the work look done instead of making it done. Watch for removed tests, lowered coverage thresholds, and disabled lint rules, and treat your CI configuration as a wall the agent cannot move.
+
 ## Hands-On Exercise
 
 Build an evaluation suite for an agent of your choice:
@@ -908,6 +914,7 @@ Build an evaluation suite for an agent of your choice:
 
 - [Vertex AI Agent Evaluation](https://docs.cloud.google.com/agent-builder/agent-engine/evaluate) - Evaluating agents on Google Cloud's Vertex AI platform
 - [Google ADK Evaluation](https://adk.dev/evaluate/) - Built-in evaluation support in the Agent Development Kit
+- [Agentic Code Review - Addy Osmani](https://addyosmani.com/blog/agentic-code-review/) - why verification is the new bottleneck, and how to review agent-written code without drowning
 
 ---
 

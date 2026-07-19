@@ -453,6 +453,30 @@ Include examples of what the skill's output should look like:
 Suggested fix: Replace with `hmac.compare_digest(stored_hash, provided_hash)`
 ```
 
+### Write workflows, not essays
+
+A skill that reads like an essay on best practices gets skimmed and ignored - the model generates plausible text about testing and then skips the testing. A skill that reads like a workflow gets executed: numbered steps, a checkpoint after each one, and a defined exit. If you have a 2,000-word reference document, converting it into a 400-word workflow usually makes it both shorter and far more likely to be followed. Prose describes; process directs.
+
+### Anticipate rationalization
+
+LLMs are excellent at rationalizing their way around steps they would rather skip - "this task is too simple to need a spec," "the tests obviously pass, no need to run them." Effective skills preempt the excuses by pairing each one with a rebuttal, right in the skill body:
+
+```markdown
+## No exceptions
+
+| If you are thinking... | Then remember... |
+|---|---|
+| "This change is too small to test" | Small changes break things too. Run the tests. |
+| "The requirements are obvious" | State your assumptions anyway - they may be wrong. |
+| "I'll clean this up in a follow-up" | There is no follow-up. Finish the checklist now. |
+```
+
+Write down the excuses your own team makes; agents make the same ones.
+
+### End every workflow in evidence
+
+The last step of a skill should produce concrete proof that the work is done: a passing test run, clean lint output, a screenshot, a reviewed diff. "Seems right" is never an exit criterion. This matters because agents reliably over-report their own success - a workflow that ends with "verify your work" gets a confident "verified!", while a workflow that ends with "paste the output of the test run" gets the actual output.
+
 ### Keep L2 instructions under 5,000 tokens
 
 If your instructions are getting long, move detailed reference material to L3 files in the `references/` directory and reference them from the main instructions:
@@ -598,6 +622,7 @@ with these sections filled in:
 - Skills tell agents how and when to act; tools let agents actually act
 - The SKILL.md file is the only required component - frontmatter for metadata, body for instructions
 - Write skills focused on one domain, with clear steps, decision points, and output examples
+- Write workflows, not essays: anticipate the model's excuses, and end every workflow in concrete evidence
 - Keep L2 instructions under 5,000 tokens; move detailed material to L3 references
 - Skills are supported across multiple platforms: Claude Code, ADK, GitHub Copilot, OpenAI, Spring AI
 - Skills, tools, and MCP work at different layers and complement each other
@@ -611,6 +636,7 @@ with these sections filled in:
 - [Anthropic Skills Repository](https://github.com/anthropics/skills)
 - [GitHub Copilot Agent Skills](https://docs.github.com/en/copilot/concepts/agents/about-agent-skills)
 - [Skills vs. MCP Tools - LlamaIndex](https://www.llamaindex.ai/blog/skills-vs-mcp-tools-for-agents-when-to-use-what)
+- [Agent Skills - Addy Osmani](https://addyosmani.com/blog/agent-skills/) - skills as an enforced software lifecycle, with anti-rationalization patterns
 
 ---
 

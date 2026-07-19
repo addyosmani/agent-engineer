@@ -815,6 +815,20 @@ Each step feeds the next. And steps 6-8 are a loop - you will go around multiple
 
 ---
 
+## You have been building a harness
+
+Step back and look at what this lesson actually produced. The model is one parameter. Everything else - the system instruction, the tool definitions and their docstrings, the eval cases, the agent type you chose - is scaffolding around the model. That scaffolding has a name: the **harness**. A useful equation to carry forward:
+
+```
+agent = model + harness
+```
+
+This matters because the harness, not the model, is usually what determines whether your agent works. A decent model with a great harness will beat a great model with a bad harness - benchmark teams have jumped dozens of ranks on agentic coding leaderboards by changing only the harness, with the model untouched. So when your agent misbehaves, resist the instinct to conclude "the model is not smart enough." Most agent failures are configuration failures: a vague tool description, a missing feedback signal, context stuffed with irrelevant material.
+
+The practical habit this suggests is the **ratchet**: every time your agent fails, turn the failure into a permanent constraint in the harness so it cannot happen the same way twice. The agent used the wrong test runner? Add a line to your [AGENTS.md](../15-agents-md/). It skipped a required step? Tighten the system instruction or add a checkpoint to the workflow. It produced a bad output shape? Add the case to your evals from [Lesson 9](../09-evaluating-and-testing-agents/). Each fix ratchets the floor upward, and the harness compounds in value while prompts alone would not. Addy Osmani's [Agent Harness Engineering](https://addyosmani.com/blog/agent-harness-engineering/) is a good deep dive on this mindset.
+
+---
+
 ## Key takeaways
 
 1. **An ADK agent needs three things:** a name, a model, and system instructions. Tools are optional but are what make agents genuinely useful.
@@ -826,6 +840,8 @@ Each step feeds the next. And steps 6-8 are a loop - you will go around multiple
 4. **Test early and often.** Use `adk web` for interactive testing and `adk eval` for automated regression checks.
 
 5. **Build incrementally.** One agent, one tool, one eval case. Get each piece working before adding the next.
+
+6. **The harness determines the agent.** Most agent failures are harness failures, not model failures. When something goes wrong, ratchet a fix into the harness - an instruction, a checkpoint, an eval - so it cannot recur.
 
 ---
 

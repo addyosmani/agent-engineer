@@ -270,6 +270,30 @@ Low  +------------------------------------------>
 
 The goal is not to eliminate risk entirely - that would mean eliminating capability. The goal is to manage risk at each level of autonomy so that agents fail gracefully and within acceptable bounds.
 
+### Calibrated autonomy: three questions before you delegate
+
+Before granting an agent a given level of autonomy, ask three questions:
+
+1. **How quickly will we detect it if something goes wrong?**
+2. **How easily can we undo the work?**
+3. **What independent evidence proves the task succeeded?**
+
+If the honest answers are "slowly," "with difficulty," and "we trust the agent's summary," the autonomy level is too high for that task. Classify work by risk (a payment path is not documentation) and by reversibility (a rolled-back commit is not a sent email), and grant autonomy conservatively - increasing it only as verification evidence accumulates.
+
+For anything beyond a trivial task, make the delegation explicit with a short contract, written before the agent starts:
+
+| Contract item | Question it answers |
+|---|---|
+| **Goal** | What outcome (not activity) counts as done? |
+| **Scope and non-goals** | What may it touch, and what is explicitly out of bounds? |
+| **Tools/permissions** | What can it access? |
+| **Stopping condition** | When does it halt - ideally something measurable? |
+| **Evidence** | What proof of completion is required (tests, logs, diffs)? |
+| **Escalation** | Who intervenes, and on what trigger? |
+| **Budget** | Token limits, retry caps, wall-clock limits |
+
+A vague goal like "improve the UX" with no stopping condition is how agents run all night doing plausible-looking work nobody asked for. High autonomy done well is not about leaving people out of the loop - it moves the human from performing every step to deciding direction and judging evidence.
+
 ---
 
 ## Governance, identity, security, and observability
@@ -928,6 +952,7 @@ Notice how each layer has a distinct role. The input guardrails catch technical 
 - [NIST AI Agent Standards Initiative](https://www.nist.gov/news-events/news/2026/02/announcing-ai-agent-standards-initiative-interoperable-and-secure) - Government standards effort built on agent security, interoperability, and identity
 - [Microsoft: Observability, governance, and security for enterprise agents](https://www.microsoft.com/en-us/security/blog/2026/02/10/80-of-fortune-500-use-active-ai-agents-observability-governance-and-security-shape-the-new-frontier/) - State of enterprise agent adoption and the governance challenges it creates
 - [OpenClaw documentation](https://docs.openclaw.ai/) - An open-source personal AI agent - a hands-on way to feel the four pillars at personal scale
+- [Agentic Autonomy Levels - Addy Osmani](https://addyosmani.com/blog/agentic-autonomy-levels/) - a six-level framework for choosing how much autonomy to grant, with anti-patterns to avoid
 
 ---
 

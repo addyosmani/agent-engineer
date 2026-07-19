@@ -633,6 +633,19 @@ Multi-agent systems are distributed systems, and distributed systems have failur
 - Design agents to handle stale data gracefully (check before acting)
 - Keep the window of inconsistency as small as possible
 
+## The orchestration tax: your attention is the bottleneck
+
+The coordination challenges above are agent-to-agent problems. There is one more constraint that dominates all of them in practice, and it is human: spawning agents is nearly free, but reviewing and integrating their work is not. Verification, merge conflict resolution, and architectural judgment are serial work that runs through one person - you. This gap between agent production capacity and human review capacity is sometimes called the **orchestration tax**.
+
+Amdahl's law applies directly: the speedup from parallelization is capped by the fraction of work that stays serial. If human judgment is 30% of the job, no number of parallel agents gets you past roughly a 3x speedup - adding agents past that point does not increase decision velocity, it just deepens the queue of unreviewed work. And unreviewed output that merges anyway is worse than a queue: it is code nobody understands, a debt that surfaces as a production incident.
+
+Practical consequences:
+
+- **Scale agent count to your review rate, not your spawn capacity.** For most engineers that is a low single-digit number of concurrent agents, not twenty. Running twenty feels productive; shipping reviewed work is productive.
+- **Automate the verifiable part.** Tests, linters, and screenshots can confirm the mechanical 80% so that your serial attention goes only to the 20% that needs genuine judgment.
+- **Never accept a summary as evidence.** An agent's report that it finished is not proof that it finished - agents systematically over-report success. Require the diff, the test output, the logs. Accepting the summary instead is the "summary substitution" trap.
+- **Batch your reviews.** Context-switching between agents costs minutes each time. Reviewing several results in one sitting beats polling each agent all day.
+
 ## Design principles for multi-agent systems
 
 Based on the patterns and challenges above, here are the key principles to follow:
@@ -685,12 +698,14 @@ A system that reviews user-generated content for policy violations, spam, misinf
 - Communication patterns - direct messaging, shared blackboard, and event-based - determine how tightly coupled your agents are.
 - Common agent roles (Planner, Retriever, Executor, Evaluator) provide a starting vocabulary for designing your system.
 - Coordination challenges like deadlocks, circular delegation, and conflicting actions are the real engineering problems in multi-agent systems. Design for them from the start.
+- Human review capacity is the real ceiling on parallelism. Scale the number of agents to your review rate, and demand evidence (diffs, test output) rather than the agent's own summary.
 - Start with a single agent and add complexity only when you need it. The best multi-agent system is the simplest one that solves your problem.
 
 ## Further reading
 
 - [Google ADK - Agents Overview](https://adk.dev/agents/) - How to build agents and multi-agent systems with the Agent Development Kit
 - [Google ADK - Workflow Agents](https://adk.dev/agents/workflow-agents/) - Built-in sequential, parallel, and loop patterns for multi-agent workflows
+- [The Orchestration Tax - Addy Osmani](https://addyosmani.com/blog/orchestration-tax/) - why human attention, not agent count, limits multi-agent throughput
 
 ---
 

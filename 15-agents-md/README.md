@@ -343,6 +343,22 @@ async def create_user(
 
 Start with a minimal AGENTS.md. When you notice an agent making the same mistake repeatedly, add an instruction to address it. The best AGENTS.md files grow through iteration, not upfront planning.
 
+### Write it by hand - do not auto-generate it
+
+Many tools offer to generate this file for you (Claude Code's `/init`, for example). Resist the temptation to accept the output as-is. Research on real repositories points in two directions at once: human-authored files containing non-obvious project knowledge measurably speed agents up, while LLM-generated context files have been found to slightly *reduce* task success and inflate cost. The reason is redundancy - an auto-generated file mostly describes things the agent would discover on its own (directory layout, tech stack, module structure), so every line just dilutes the context without adding information.
+
+The test for every line is the **discovery filter**: *can the agent find this out by reading the code?* If yes, delete the line.
+
+| Line | Verdict | Why |
+|---|---|---|
+| "This project is a monorepo with services under `services/`" | Delete | Discoverable from the first directory listing |
+| "Use `uv` for package management, not `pip`" | Keep | Not discoverable, operationally significant |
+| "The frontend is React with TypeScript" | Delete | Obvious from `package.json` |
+| "Run tests with `--no-cache` or you will get false positives" | Keep | A landmine the agent cannot guess |
+| "`legacy/` looks dead but is imported by three production modules" | Keep | The code actively misleads without this warning |
+
+A useful mental model: treat AGENTS.md as **a living list of codebase smells you have not fixed yet**, not a permanent configuration. If agents repeatedly stumble over something, that is often a codebase design problem wearing a documentation costume. The best fix is usually to restructure the code, add a linter rule, or improve the tests - and then delete the line.
+
 ### Treat it as code
 
 Update AGENTS.md in the same PR when you change build processes, test conventions, or project structure. Stale instructions are worse than no instructions, because they actively mislead agents.
@@ -449,6 +465,7 @@ AGENTS.md is the foundation. Think of it as the first layer of context that make
 - Focus on six areas: commands, testing, project structure, code style, git workflow, and boundaries
 - Keep it concise (under 150 lines), specific, and up to date
 - Start simple and iterate based on what the agent gets wrong
+- Write it by hand and apply the discovery filter: if the agent can find it by reading the code, delete the line
 - Use hierarchical files in monorepos for area-specific guidance
 - Put shared instructions in AGENTS.md, tool-specific features in their respective config files
 
@@ -459,6 +476,7 @@ AGENTS.md is the foundation. Think of it as the first layer of context that make
 - [AGENTS.md official site](https://agents.md/)
 - [AGENTS.md specification on GitHub](https://github.com/agentsmd/agents.md)
 - [How to write a great AGENTS.md - GitHub Blog](https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/)
+- [Stop Using /init for AGENTS.md - Addy Osmani](https://addyosmani.com/blog/agents-md/) - the research behind the discovery filter
 - [Agentic AI Foundation (AAIF)](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation)
 - [Custom instructions with AGENTS.md - OpenAI Codex](https://developers.openai.com/codex/guides/agents-md)
 

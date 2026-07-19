@@ -702,6 +702,37 @@ The choice depends on your priorities: ADK if you want Vertex AI integration and
 
 ---
 
+## Long-running agents: orchestrating across sessions
+
+Everything above assumes the orchestration finishes within one run. But an increasingly common shape of work is the agent that makes forward progress on a goal across many sessions - hours, days, sometimes weeks. Think of a large migration, a recurring triage job, or a feature that takes an agent several context windows to complete. Orchestrating that well means designing around three walls every agent eventually hits:
+
+1. **Finite context windows.** Even million-token windows fill up, and performance degrades from context rot well before the hard limit (see [Lesson 5](../05-memory-and-context/)).
+2. **No persistent state.** A new session starts blank. Without deliberate design, every context window boundary is a cliff where the agent forgets everything - like a project staffed by engineers working in shifts, where each new engineer arrives with no memory of the previous shift.
+3. **Self-verification failure.** Models over-report their own completion. An agent left alone will happily declare success without external evidence.
+
+The design response to all three is the same: **move the state out of the model and the verification out of the agent.**
+
+- **Externalize state to durable artifacts.** A task list file, a progress log, git commits. The agent stays amnesiac; the filesystem remembers. Each session starts by reading the current state from disk, not by being told it in a prompt.
+- **Write explicit done-conditions before starting.** "Improve the test coverage" invites the agent to declare victory early. "All items in `tasks.json` marked done, with the test suite passing" is a stopping condition a fresh session can check.
+- **Treat context resets as first-class events.** Do not fight the window - plan for full teardown and reconstruction from the handoff files. If the agent cannot resume from what is on disk, the state files are incomplete.
+- **Keep the evaluator outside the generator.** The generator-critic pattern from earlier applies with more force here: verification must come from tests, CI, or a separate agent, never from the agent grading its own work.
+
+The simplest working implementation of all this is a pattern practitioners call the **Ralph loop**: a dumb outer loop around a fresh agent session per task.
+
+```
+while tasks remain in tasks.json:
+    task = next unfinished task
+    prompt = task + relevant context + notes from progress.txt
+    run agent session (fresh context)
+    run verification (tests, lint)
+    append outcome to progress.txt
+    mark task done only if verification passed
+```
+
+No memory tricks, no giant context - continuity comes entirely from external files and git history. Framework persistence features (LangGraph checkpointing, ADK session state) are the built-in version of the same idea: state that survives the process, so a run can pause, be inspected, and resume.
+
+---
+
 ## Best practices
 
 ### Start simple, add complexity when needed
@@ -782,6 +813,7 @@ Agents fail. Tools return errors. LLMs hallucinate. Your orchestrator needs to h
 - Patterns compose - nest them to build complex systems from simple pieces
 - ADK provides SequentialAgent, ParallelAgent, and LoopAgent for deterministic orchestration, plus LLM-driven coordination for dynamic routing
 - Start simple. A single well-equipped agent is better than a poorly orchestrated team.
+- For work that outlives one session, externalize state to durable files, define explicit done-conditions, and keep verification outside the agent
 - Set iteration limits, validate between steps, manage context aggressively, and design for failure
 
 ---
@@ -794,6 +826,8 @@ Agents fail. Tools return errors. LLMs hallucinate. Your orchestrator needs to h
 - [Microsoft Azure - AI Agent Orchestration Patterns](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
 - [CrewAI Documentation](https://docs.crewai.com/)
+- [Long-running Agents - Addy Osmani](https://addyosmani.com/blog/long-running-agents/) - the three walls and production patterns for multi-session agents
+- [Loop Engineering - Addy Osmani](https://addyosmani.com/blog/loop-engineering/) - designing the loop that prompts the agent so you do not have to
 
 ---
 
