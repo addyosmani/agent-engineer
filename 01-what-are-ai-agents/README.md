@@ -410,18 +410,23 @@ Agents add power but also complexity, cost, and latency. Not every problem needs
 ### The decision flowchart
 
 ```
-Does the task require external data or actions?
+Can the model answer from the prompt and its own knowledge?
   |
-  +-- No --> Can the model answer from its training data?
-  |            |
-  |            +-- Yes --> Use a simple prompt
-  |            +-- No  --> Consider RAG (retrieval) first, then an agent
+  +-- Yes --> Use a simple prompt
   |
-  +-- Yes --> Is it a single tool call?
+  +-- No  --> Does it only need to look up information (docs, records)?
                |
-               +-- Yes --> A simple function-calling setup may suffice
-               +-- No  --> Use an agent with orchestration
+               +-- Yes --> Try RAG (retrieval) first
+               +-- No  --> Does it need more than one tool call?
+                            |
+                            +-- No  --> A simple function call is enough
+                            +-- Yes --> Do you know the steps in advance?
+                                         |
+                                         +-- Yes --> A fixed workflow (steps chained in code)
+                                         +-- No  --> Use an agent
 ```
+
+The last question is the one people most often skip. "Look up the order, check the shipping status, and send an update email" always runs the same three steps in the same order, so you can chain them in code. That is cheaper, faster, and more predictable than an agent. Reach for an agent when the next step depends on what the last one returned - for example, investigating a production incident, where each finding decides where to look next. Lesson 4 and Lesson 18 cover this spectrum from fixed workflows to dynamic agents in more depth.
 
 ### Cost and latency considerations
 
