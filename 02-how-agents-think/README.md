@@ -70,7 +70,8 @@ LLMs do not read characters or words. They read **tokens** - chunks of text that
 
 **Why this matters for agents:**
 
-- **Billing**: Most APIs charge per token (input + output). Agent workflows use many more tokens than single prompts because every iteration of the loop sends the full context.
+- **Billing**: Most APIs charge per token (input + output). Agent workflows use many more tokens than single prompts because every iteration of the loop sends the full context. **Prompt caching** softens this: when the start of the context (system instructions, tool definitions, earlier turns) is unchanged between calls, providers bill the cached part at a steep discount. Keep that stable prefix at the top and append new content at the end.
+- **Thinking tokens**: Current models reason internally before answering, and those thinking tokens are billed as output. The thinking level you choose (covered below) is now a major cost and latency dial.
 - **Speed**: More tokens = more time to generate. Keep your tool descriptions concise.
 - **Context limits**: There is a maximum number of tokens the model can process in a single call. If your agent's accumulated context exceeds this, you lose information.
 
@@ -83,7 +84,7 @@ The **context window** is the total number of tokens a model can consider at onc
 | Gemini 3.1 Pro | 1,000,000 tokens |
 | Gemini 3.5 Flash | 1,000,000 tokens |
 | GPT-5.6 | 1,050,000 tokens |
-| Claude Sonnet 5 | 1,000,000 tokens |
+| Claude Sonnet 5.5 | 1,000,000 tokens |
 
 **What goes into the context window during an agent call:**
 
@@ -106,13 +107,16 @@ The **context window** is the total number of tokens a model can consider at onc
 
 **Why this matters for agents:**
 
-As an agent executes multiple steps, the context grows with each tool call and result. A 5-step agent workflow might accumulate thousands of tokens of tool results. If you are not careful, you can exhaust the context window mid-task.
+As an agent executes multiple steps, the context grows with each tool call and result. A long-running agent can accumulate hundreds of thousands of tokens of tool results.
+
+With frontier models now at around 1M tokens, running out of room is less often the problem. The bigger problem is **context rot**: answer quality and instruction-following degrade well before the window is full, as the model has more irrelevant material to sift through. A bigger window is not a substitute for a clean one.
 
 Strategies to manage this:
-- **Summarize** intermediate results instead of keeping raw data
-- **Truncate** long tool outputs to the relevant parts
-- **Use models with large context windows** for complex multi-step tasks
-- **Implement a sliding window** that drops older, less relevant context
+- **Truncate** long tool outputs to the relevant parts before they enter the context
+- **Compact** the history: when context grows large, replace older turns and stale tool results with a summary (many frameworks and APIs now do this for you)
+- **Clear** tool results the agent no longer needs, such as a file it has already edited
+- **Offload** to external memory (files, a notes tool, a database) and retrieve on demand instead of keeping everything in context
+- **Keep the prefix stable** so prompt caching keeps working - edit or drop content near the end, not the start
 
 <div id="context-window-explorer" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 32px auto; background: #f8f9fa; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 32px; box-sizing: border-box;">
   <h3 style="margin: 0 0 4px 0; font-size: 20px; color: #1a1a2e;">Context Window Explorer</h3>
@@ -150,7 +154,7 @@ Strategies to manage this:
     ];
     var models = [
       { name: "GPT-5.6", tokens: 1050000 },
-      { name: "Claude Sonnet 5", tokens: 1000000 },
+      { name: "Claude Sonnet 5.5", tokens: 1000000 },
       { name: "Gemini 3.5 Flash", tokens: 1000000 },
       { name: "Gemini 3.1 Pro", tokens: 1000000 }
     ];
@@ -260,13 +264,31 @@ Think of it like reading a long document and highlighting the important parts. T
 
 ## Reasoning strategies
 
-How an agent "thinks" about a problem depends heavily on how you prompt the model. Different reasoning strategies produce very different results, especially for complex tasks.
+How an agent "thinks" about a problem used to depend mostly on how you prompted the model. Today's frontier models (Gemini 3.x, Claude, GPT-5) are **thinking models**: they reason internally before they answer, and you control how much through an API parameter rather than prompt wording. The classic strategies below are still worth understanding - they explain what the model is doing under the hood, and they still apply to non-thinking models and to how you structure an agent's workflow.
+
+### Built-in thinking and thinking levels
+
+**What it is:** The model produces a hidden (or summarized) reasoning pass before its visible answer. This is Chain-of-Thought trained into the model, rather than requested in the prompt.
+
+**How you control it:** Instead of writing "think step by step", you set how much reasoning to spend. In the Gemini API this is `thinking_level` (for example `low` or `high`; Gemini 3 models default to `high`). Other providers expose a similar setting, often called reasoning effort.
+
+| Thinking level | Use for | Trade-off |
+|---|---|---|
+| Minimal / low | Classification, extraction, simple tool calls, chat | Fastest and cheapest |
+| High | Multi-step planning, debugging, complex code, ambiguous tool choice | Slower, more output tokens billed |
+
+**Why this matters for agents:**
+- Adding "think step by step" to a thinking model's prompt is mostly redundant. Spend your prompt on the task, constraints, and context instead.
+- The thinking level is a dial you can turn per step, which gives you much of the benefit of model routing without switching models (see below).
+- In multi-turn tool use, some APIs return the model's reasoning state (for example, Gemini's thought signatures) that you must pass back on the next call. The official SDKs and frameworks like ADK handle this for you; hand-rolled loops must not drop it.
+
+> **Learn more:** [Gemini thinking](https://ai.google.dev/gemini-api/docs/thinking)
 
 ### Chain-of-Thought (CoT)
 
-**What it is:** Prompting the model to think through a problem step by step before giving a final answer.
+**What it is:** Prompting the model to think through a problem step by step before giving a final answer. This is the technique that built-in thinking grew out of.
 
-**How it works:** Instead of jumping straight to an answer, the model generates intermediate reasoning steps. This dramatically improves accuracy on tasks that require logic, math, or multi-step analysis.
+**How it works:** Instead of jumping straight to an answer, the model generates intermediate reasoning steps. This dramatically improves accuracy on tasks that require logic, math, or multi-step analysis. With thinking models this happens automatically; with non-thinking or lightweight models, you still prompt for it explicitly.
 
 **Example without CoT:**
 ```
@@ -326,6 +348,8 @@ Decision: Proceed with Path A first, try Path B if A is insufficient
 - Architecture decisions that require evaluating alternatives
 
 **Trade-off:** ToT uses more tokens and takes more time. Reserve it for decisions where the cost of choosing wrong is high.
+
+**In practice today:** A thinking model already weighs alternatives internally, so ToT is rarely written as a single prompt anymore. When you need it explicitly, it lives in the orchestration layer: generate several candidate solutions in parallel calls, have a judge step (or tests) score them, and continue with the best. This is close kin to the reflection pattern in Lesson 4.
 
 ### Step-by-Step Decomposition
 
@@ -418,6 +442,8 @@ User: "Review this pull request and suggest improvements"
 
 This task needs deep reasoning, so it warrants a more capable model.
 
+**Routing by thinking level:** You do not always need separate models. A single capable model with a low thinking level for simple steps and a high thinking level for hard ones covers much of the same ground, with one model to evaluate and maintain. Route across models when the cost or latency difference is large enough to justify the extra moving parts.
+
 ### Google Cloud Model options
 
 Google Cloud provides access to Gemini models through Vertex AI:
@@ -426,7 +452,9 @@ Google Cloud provides access to Gemini models through Vertex AI:
 - **Gemini 3.1 Pro** - Top-tier reasoning for complex tasks. Use when the task requires deep analysis, complex multi-step logic, or nuanced understanding.
 - **Gemini 3.1 Flash-Lite** - Fastest and cheapest option for simple tasks like classification and extraction.
 
-> **Note:** Model names move quickly. The Gemini 2.5 family (2.5 Flash, 2.5 Pro, 2.5 Flash-Lite) is still available but is scheduled to retire on October 16, 2026, and Gemini 2.0 models were shut down on June 1, 2026. Always check the docs for the current model IDs.
+> **Note:** Model names move quickly. The Gemini 2.5 family (2.5 Flash, 2.5 Pro, 2.5 Flash-Lite) reached its retirement date on October 16, 2026, and Gemini 2.0 models were shut down on June 1, 2026. If you have code pinned to those IDs, migrate it. Always check the docs for the current model IDs.
+
+> **Note:** Use the Google Gen AI SDK (`google-genai`) to call Gemini. Releases of the older Vertex AI SDK after June 2026 do not support Gemini, and Gemini 3.5 Flash and later need `google-genai` 2.0.0 or newer. See the [migration guide](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/migrate).
 
 > **Learn more:** [Vertex AI Model Documentation](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/learn/models)
 
@@ -443,11 +471,13 @@ System instructions are the agent's "job description." They tell the model who i
 A well-written system instruction for an agent typically includes:
 
 1. **Role definition**: What the agent is and who it serves
-2. **Capabilities**: What tools are available and when to use them
+2. **Tool usage policy**: When to use which tool, and in what order (the tools themselves are defined separately - see below)
 3. **Constraints**: What the agent should not do
 4. **Output format**: How to structure responses
 5. **Error handling**: What to do when things go wrong
 6. **Personality/tone**: How to communicate (if relevant)
+
+Tools are passed to the model as structured function declarations (name, description, parameter schema) through the API, not written into the prompt. Re-listing their signatures in the system instructions wastes tokens and can drift out of sync with the real definitions. Put *what a tool does* in its description, and *when to use it* in the system instructions. Lesson 3 covers tool definitions in detail.
 
 ### Example: customer support agent
 
@@ -458,11 +488,10 @@ Your role:
 - Help customers with order inquiries, returns, and product questions
 - Be friendly, professional, and concise
 
-Available tools:
-- lookup_order(order_id): Returns order status, items, and shipping info
-- initiate_return(order_id, reason): Starts a return process
-- search_products(query): Searches the product catalog
-- escalate_to_human(reason): Transfers to a human agent
+Tool usage:
+- Use lookup_order before answering any question about an order
+- Only call initiate_return after the customer confirms they want a return
+- Use escalate_to_human when the customer asks for a person
 
 Guidelines:
 - Always verify the customer's identity before accessing order information
@@ -484,7 +513,7 @@ When you encounter an error from a tool:
 | Be specific about tool usage | Leave tool selection ambiguous |
 | Define clear boundaries | Assume the model knows your business rules |
 | Include error handling guidance | Hope the model figures out errors on its own |
-| Specify output format | Let the model choose its own format each time |
+| Enforce machine-read output with structured output (a JSON schema in the API config) | Rely on prompt wording alone to get valid JSON |
 | Use concrete examples | Write abstract, vague instructions |
 | Keep instructions concise | Write a 10-page essay (wastes context) |
 
@@ -513,7 +542,7 @@ When a language model generates text, it does not just pick the single most like
 
 **Temperature** controls how random the model's outputs are.
 
-- **Temperature 0 (or very low)**: The model almost always picks the most likely token. Outputs are deterministic and focused.
+- **Temperature 0 (or very low)**: The model almost always picks the most likely token. Outputs are focused and far more repeatable, though not perfectly deterministic - serving infrastructure (batching, hardware) can still introduce small run-to-run differences.
 - **Temperature 1**: The model samples proportionally to token probabilities. Outputs are more varied and creative.
 - **Temperature > 1**: The model becomes increasingly random. Outputs become unpredictable.
 
@@ -521,7 +550,7 @@ When a language model generates text, it does not just pick the single most like
 
 ```
 Temperature 0:    "The capital of France is Paris."
-                  (Always the same answer)
+                  (Nearly always the same answer)
 
 Temperature 0.7:  "The capital of France is Paris, a city known for..."
                   (Slight variation in elaboration)
@@ -532,16 +561,19 @@ Temperature 1.5:  "The capital of France is historically rooted in..."
 
 ### What temperature to use for agents
 
-| Agent Task | Recommended Temperature | Why |
-|---|---|---|
-| Tool selection | 0 - 0.2 | You want deterministic, correct tool calls |
-| Data extraction | 0 | Exact answers, no creativity needed |
-| Code generation | 0 - 0.3 | Correctness matters more than variety |
-| Planning | 0.2 - 0.5 | Some flexibility helps explore options |
-| Creative writing | 0.7 - 1.0 | Variety and originality are valued |
-| Brainstorming | 0.8 - 1.0 | Want diverse ideas |
+The long-standing advice was "keep temperature low (0 to 0.3) for agents." **That no longer holds for thinking models.**
 
-**For most agent use cases, keep temperature low (0 to 0.3).** Agents need to make reliable decisions about tool use, parameter extraction, and reasoning. High temperature introduces randomness where you want consistency.
+- **Gemini 3.x:** Google recommends leaving temperature at its default of **1.0**. The models' reasoning is tuned for that setting, and lowering it can cause looping or degraded performance, especially on complex reasoning tasks.
+- **Other providers' reasoning models** similarly restrict or ignore temperature when thinking is enabled.
+
+| Model type | Temperature guidance |
+|---|---|
+| Thinking models (Gemini 3.x and peers) | Leave at the default. Tune the thinking level instead. |
+| Non-thinking or older models | Low (0 - 0.3) for tool calls, extraction, and code; higher (0.7 - 1.0) for creative or brainstorming tasks |
+
+**For thinking models, reliability comes from other levers:** clear tool descriptions, a well-structured system prompt, structured output for anything a program parses, an appropriate thinking level, and evals that catch regressions (Lesson 9). Always check the current docs for the model you use.
+
+> **Learn more:** [Gemini 3 developer guide](https://ai.google.dev/gemini-api/docs/gemini-3)
 
 ### Top-K and Top-P Sampling
 
@@ -559,28 +591,28 @@ Top-P=0.8: Consider only [0.4, 0.25, 0.15] (cumulative = 0.8)
 Top-P=0.9: Consider only [0.4, 0.25, 0.15, 0.08] (cumulative = 0.88... round up)
 ```
 
-**For agents:** Use conservative settings. Top-P around 0.9 and moderate Top-K values are reasonable defaults. The model's default settings are usually fine for agent work - temperature is the parameter you are most likely to want to adjust.
+**For agents:** Leave Top-K and Top-P at the model's defaults. With current models, the sampling defaults are the tested configuration; the settings you are more likely to adjust are the thinking level and, for older models, temperature.
 
 ### How sampling affects the agent loop
 
-Consider an agent that needs to decide which tool to call. With low temperature, it will consistently pick the same (usually correct) tool for a given situation. With high temperature, it might pick different tools on different runs, leading to inconsistent behavior.
+Consider an agent that needs to decide which tool to call. You want it to pick the same (correct) tool for the same situation, every time. Inconsistency here makes agents hard to debug.
 
 ```
 User: "What is the weather in Tokyo?"
 
-Low temperature (0):
+Reliable:
   -> Agent thinks: "I need the weather tool"
   -> Calls: get_weather(city="Tokyo")
-  -> Consistent, predictable
+  -> Same choice on every run
 
-High temperature (1.2):
+Unreliable:
   -> Run 1: Calls get_weather(city="Tokyo")
   -> Run 2: Calls web_search("Tokyo weather forecast")
   -> Run 3: Tries to answer from training data (no tool call)
   -> Inconsistent, hard to debug
 ```
 
-For production agents, deterministic behavior is almost always what you want.
+With older models, the main cause of the unreliable pattern was high temperature. With thinking models at default settings, it is far more often an unclear tool description, overlapping tools, or vague instructions. Fix those first, and measure consistency with repeated eval runs rather than assuming a sampling setting guarantees it.
 
 ---
 
@@ -602,6 +634,9 @@ The chef can only work with what fits on the kitchen counter. If the counter is 
 **Temperature is like the chef's mood:**
 - Low temperature: The chef is focused and methodical. They follow the recipe exactly. Every time you order the same dish, it tastes the same.
 - High temperature: The chef is feeling creative. They improvise, substitute ingredients, try new things. Sometimes the result is amazing, sometimes it is weird.
+
+**The thinking level is like prep time:**
+For a simple order, the chef starts cooking right away. For a tricky one, they stop and plan the whole dish first. More planning time means better results on hard dishes, but slower service - so you only ask for it when the dish needs it.
 
 **System instructions are like the restaurant concept:**
 "You are a French bistro. You use traditional techniques. You do not serve sushi." This shapes every decision the chef makes without having to be repeated for each dish.
@@ -630,13 +665,15 @@ Your team wants an agent that reads new bug reports, categorizes them by severit
 | Assign to team | Flash (light) | Lookup-style decision based on component |
 | Draft investigation plan | Pro (heavy) | Requires understanding the bug, related systems, and suggesting diagnostic steps |
 
-**Temperature decisions:**
+**Thinking level and output decisions:**
 
-| Step | Temperature | Reasoning |
-|---|---|---|
-| Classify severity | 0 | Must be deterministic - same bug should always get the same severity |
-| Assign to team | 0 | Must be consistent - same component should always route to the same team |
-| Draft investigation plan | 0.3 | Slight flexibility helps generate more useful and varied investigation ideas |
+| Step | Thinking level | Output | Reasoning |
+|---|---|---|---|
+| Classify severity | Low | Structured output: enum `P0`-`P3` | Clear criteria; the schema guarantees a valid label every time |
+| Assign to team | Low | Structured output: enum of team names | Lookup-style decision; the schema rules out made-up team names |
+| Draft investigation plan | High | Free text | Needs real reasoning about the bug, related systems, and diagnostics |
+
+Temperature stays at the model default throughout. Consistency comes from the schemas, the clear criteria in the system instructions, and an eval set of past bugs with known severities and owners.
 
 **System instruction excerpt:**
 
@@ -662,7 +699,7 @@ When drafting an investigation plan:
 - Note any recent deployments that might be related
 ```
 
-This example shows how understanding the model's capabilities, setting appropriate parameters, and writing clear instructions all contribute to a reliable agent.
+This example shows how understanding the model's capabilities, choosing the right thinking level and output format, and writing clear instructions all contribute to a reliable agent.
 
 ---
 
@@ -670,15 +707,16 @@ This example shows how understanding the model's capabilities, setting appropria
 
 ### 1. trusting the model for math
 
-LLMs predict tokens, not compute equations. For any calculation that matters, use a code execution tool.
+LLMs predict tokens, not compute equations. Thinking models get simple arithmetic right far more often than older models did, but "usually right" is not good enough for an invoice. For any calculation that matters, use a code execution tool.
 
 ```
-Bad:  "Calculate the total cost of 47 items at $23.99 each"
-      -> Model might say $1,127.53 (the correct answer is $1,127.53,
-         but it got lucky - it often gets these wrong)
+Bad:  "Sum the line items in these 300 invoices and apply each
+       customer's discount tier"
+      -> Model produces a plausible total that may be silently off
+         by a few rows or a rounding step
 
-Good: Have the agent call a calculator tool or code execution tool
-      -> calculate("47 * 23.99") -> $1,127.53 (guaranteed correct)
+Good: Have the agent write and run code over the data
+      -> Exact, repeatable, and you can inspect the code it ran
 ```
 
 ### 2. assuming perfect memory
@@ -705,13 +743,15 @@ LLMs will confidently generate plausible but incorrect information. For any fact
 
 2. **Tokens, context windows, and attention** are the three key concepts. Tokens determine cost and speed. Context windows determine how much information the model can work with. Attention determines what the model focuses on.
 
-3. **Reasoning strategies matter.** Chain-of-Thought, Tree-of-Thoughts, and step-by-step decomposition can dramatically improve agent performance on complex tasks.
+3. **Reasoning is now built in.** Thinking models do Chain-of-Thought internally; you control how much with a thinking level rather than prompt tricks. Tree-of-Thoughts and decomposition still matter, but increasingly live in your orchestration layer.
 
-4. **Pick the right model for each step.** Use lighter models for simple tasks and heavier models for complex reasoning. Model routing reduces cost and latency.
+4. **Pick the right model and thinking level for each step.** Use lighter models or lower thinking levels for simple tasks, and heavier models or higher thinking levels for complex reasoning. This reduces cost and latency.
 
-5. **System instructions are your main lever for controlling agent behavior.** Write them carefully, be specific, and iterate based on testing.
+5. **System instructions are your main lever for controlling agent behavior.** Write them carefully, be specific, and iterate based on testing. Define tools through the API, and use structured output for anything a program reads.
 
-6. **Keep temperature low for agents.** Deterministic behavior is almost always better for production agent systems.
+6. **Do not reflexively lower temperature.** For thinking models like Gemini 3.x, leave sampling at the defaults. Get consistency from clear instructions, good tool descriptions, structured output, and evals.
+
+7. **Manage context, do not just fill it.** Large windows still suffer from context rot. Truncate, compact, and keep a stable prefix so prompt caching keeps costs down.
 
 ---
 
